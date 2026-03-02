@@ -2,6 +2,7 @@ package npg_qc_viewer::Model::User;
 
 use Moose;
 use Carp;
+use Readonly;
 
 BEGIN { extends 'Catalyst::Model' }
 
@@ -41,15 +42,29 @@ is authorised to do manual qc, the 'has_mqc_role' key is set to 1.
 
 sub logged_user {
   my ($self, $c, $user_credentials) = @_;
+
   if (!$c) {
     croak 'Context object is missing';
   }
   $user_credentials ||= {};
   my $h = {'username' => q[], 'has_mqc_role' => q[]};
-  if ($c->authenticate($user_credentials) && $c->user->username) {
-    $h->{'username'}     = $c->user->username;
-    $h->{'has_mqc_role'} = $c->check_user_roles(qw/manual_qc/) ? 1 : q[];
+  my $preferred_username = $c->req->header('X-OIDC-Preferred-User') // q{};
+
+  my $username;
+  Readonly my $NOT_FOUND => -1;
+  if (index($preferred_username, '@') != $NOT_FOUND) { ## no critic (ValuesAndExpressions::ProhibitNoisyQuotes)
+      $username = (split /@/smx, $preferred_username)[0];
+  } else {
+      $username = $preferred_username;
   }
+
+  if ($username) {
+        $h->{'username'}     = $username;
+        $h->{'has_mqc_role'} = $c->check_user_roles(qw/manual_qc/) ? 1 : q[];
+  } else {
+        $c->req->headers->remove_header('X-OIDC-Preferred-User');
+    }
+
   return $h;
 }
 

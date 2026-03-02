@@ -1,6 +1,6 @@
 Build.PL
 Changes
-lib/Catalyst/Authentication/Credential/SangerSSOnpg.pm
+lib/npg_qc_viewer/Controller/Auth.pm
 lib/npg_qc_viewer/Controller/Checks.pm
 lib/npg_qc_viewer/Controller/Illumina.pm
 lib/npg_qc_viewer/Controller/QcOutcomes.pm
@@ -304,3 +304,4 @@ t/data/test_app_no_db.conf
 t/perlcriticrc
 t/util.pm
 wtsi_local/httpd_seqqc.conf
+wtsi_local/seqqc_okta_oidc_auth.conf
